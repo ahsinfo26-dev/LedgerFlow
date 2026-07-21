@@ -1,0 +1,49 @@
+{
+  "name": "Product",
+  "type": "object",
+  "properties": {
+    "code": {
+      "type": "string",
+      "description": "Unique product code for quick lookup"
+    },
+    "name": {
+      "type": "string",
+      "description": "Product name"
+    },
+    "description": {
+      "type": "string",
+      "description": "Product description"
+    },
+    "unit_price": {
+      "type": "number",
+      "description": "Unit selling price"
+    },
+    "cost_price": {
+      "type": "number",
+      "description": "Cost price"
+    },
+    "stock_quantity": {
+      "type": "number",
+      "default": 0,
+      "description": "Current stock level"
+    },
+    "unit": {
+      "type": "string",
+      "description": "Unit of measure (e.g. each, box, kg)"
+    },
+    "category": {
+      "type": "string",
+      "description": "Product category"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether product is active"
+    }
+  },
+  "required": [
+    "code",
+    "name",
+    "unit_price"
+  ]
+}

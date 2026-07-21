@@ -1,0 +1,118 @@
+{
+  "name": "Settings",
+  "type": "object",
+  "properties": {
+    "company_name": {
+      "type": "string",
+      "description": "Your company name"
+    },
+    "company_address": {
+      "type": "string",
+      "description": "Your company address"
+    },
+    "company_phone": {
+      "type": "string",
+      "description": "Your company phone"
+    },
+    "company_email": {
+      "type": "string",
+      "description": "Your company email"
+    },
+    "company_vat": {
+      "type": "string",
+      "description": "Your company VAT number"
+    },
+    "company_logo_url": {
+      "type": "string",
+      "description": "Company logo URL"
+    },
+    "bank_name": {
+      "type": "string",
+      "description": "Bank name"
+    },
+    "bank_account_name": {
+      "type": "string",
+      "description": "Account holder name"
+    },
+    "bank_account_number": {
+      "type": "string",
+      "description": "Bank account number"
+    },
+    "bank_branch_code": {
+      "type": "string",
+      "description": "Branch code"
+    },
+    "bank_swift": {
+      "type": "string",
+      "description": "SWIFT/BIC code"
+    },
+    "bank_reference": {
+      "type": "string",
+      "description": "Default payment reference"
+    },
+    "terms_and_conditions_quotes": {
+      "type": "array",
+      "description": "Up to 15 lines of terms and conditions for quotes",
+      "items": {
+        "type": "string"
+      }
+    },
+    "terms_and_conditions_invoices": {
+      "type": "array",
+      "description": "Up to 15 lines of terms and conditions for invoices",
+      "items": {
+        "type": "string"
+      }
+    },
+    "terms_and_conditions": {
+      "type": "array",
+      "description": "Legacy terms and conditions (migrated to quotes/invoices specific fields)",
+      "items": {
+        "type": "string"
+      }
+    },
+    "quote_prefix": {
+      "type": "string",
+      "default": "QUO",
+      "description": "Quote number prefix"
+    },
+    "sales_order_prefix": {
+      "type": "string",
+      "default": "SO",
+      "description": "Sales order number prefix"
+    },
+    "invoice_prefix": {
+      "type": "string",
+      "default": "INV",
+      "description": "Invoice number prefix"
+    },
+    "credit_note_prefix": {
+      "type": "string",
+      "default": "CN",
+      "description": "Credit note number prefix"
+    },
+    "next_quote_number": {
+      "type": "number",
+      "default": 1,
+      "description": "Next quote sequence number"
+    },
+    "next_sales_order_number": {
+      "type": "number",
+      "default": 1
+    },
+    "next_invoice_number": {
+      "type": "number",
+      "default": 1
+    },
+    "next_credit_note_number": {
+      "type": "number",
+      "default": 1
+    },
+    "default_vat_percent": {
+      "type": "number",
+      "default": 15,
+      "description": "Default VAT percentage"
+    }
+  },
+  "required": []
+}

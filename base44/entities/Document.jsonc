@@ -1,0 +1,141 @@
+{
+  "name": "Document",
+  "type": "object",
+  "properties": {
+    "doc_type": {
+      "type": "string",
+      "enum": [
+        "quote",
+        "sales_order",
+        "invoice",
+        "credit_note"
+      ],
+      "description": "Type of document"
+    },
+    "doc_number": {
+      "type": "string",
+      "description": "Document number (e.g. QUO-001, INV-001)"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "sent",
+        "accepted",
+        "converted",
+        "cancelled",
+        "paid"
+      ],
+      "default": "draft",
+      "description": "Document status"
+    },
+    "customer_id": {
+      "type": "string",
+      "description": "Reference to customer"
+    },
+    "customer_name": {
+      "type": "string",
+      "description": "Customer name snapshot"
+    },
+    "customer_email": {
+      "type": "string",
+      "description": "Customer email snapshot"
+    },
+    "customer_address": {
+      "type": "string",
+      "description": "Customer address snapshot"
+    },
+    "customer_vat": {
+      "type": "string",
+      "description": "Customer VAT number snapshot"
+    },
+    "date": {
+      "type": "string",
+      "format": "date",
+      "description": "Document date"
+    },
+    "valid_until": {
+      "type": "string",
+      "format": "date",
+      "description": "Valid until date (for quotes)"
+    },
+    "order_reference": {
+      "type": "string",
+      "description": "Customer order reference or PO number"
+    },
+    "line_items": {
+      "type": "array",
+      "description": "Line items",
+      "items": {
+        "type": "object",
+        "properties": {
+          "product_id": {
+            "type": "string"
+          },
+          "product_code": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "number"
+          },
+          "unit_price": {
+            "type": "number"
+          },
+          "discount_percent": {
+            "type": "number",
+            "default": 0
+          },
+          "line_total": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "subtotal": {
+      "type": "number",
+      "description": "Subtotal before tax"
+    },
+    "discount_total": {
+      "type": "number",
+      "description": "Total discount amount"
+    },
+    "vat_percent": {
+      "type": "number",
+      "default": 15,
+      "description": "VAT percentage"
+    },
+    "vat_amount": {
+      "type": "number",
+      "description": "VAT amount"
+    },
+    "total": {
+      "type": "number",
+      "description": "Grand total"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Additional notes"
+    },
+    "converted_from_id": {
+      "type": "string",
+      "description": "ID of document this was converted from"
+    },
+    "converted_from_type": {
+      "type": "string",
+      "description": "Type of document this was converted from"
+    },
+    "converted_from_number": {
+      "type": "string",
+      "description": "Number of source document"
+    }
+  },
+  "required": [
+    "doc_type",
+    "doc_number",
+    "customer_id",
+    "date"
+  ]
+}
