@@ -1,7 +1,0 @@
-Copy/paste this exact YAML into the editor for .github/workflows/auto-migrate-vite-to-next.yml:
-
-name: Auto migrate Vite → Next (create PR) on: push: branches: - vita workflow_dispatch:
-
-permissions: contents: write pull-requests: write
-
-jobs: migrate: runs-on: ubuntu-latest steps: - name: Checkout repo uses: actions/checkout@v4 with: fetch-depth: 0
