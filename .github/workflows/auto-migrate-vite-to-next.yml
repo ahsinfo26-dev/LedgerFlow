@@ -1,0 +1,23 @@
+  - name: Setup Node
+    uses: actions/setup-node@v4
+    with:
+      node-version: '20'
+
+  - name: Install required packages for codemod
+    run: |
+      npm install --no-save fs-extra globby
+
+  - name: Run migration script
+    run: node scripts/migrate-vite-to-next.mjs
+
+  - name: Create Pull Request with changes
+    uses: peter-evans/create-pull-request@v5
+    with:
+      token: ${{ secrets.GITHUB_TOKEN }}
+      commit-message: "Automated: migrate Vite -> Next"
+      branch: "auto/migrate-vite-to-next-${{ github.run_id }}"
+      base: next
+      title: "Automated migration: Vite → Next"
+      body: |
+        Mechanical migration to Next. Review and run build/tests before merging.
+      labels: automated,migration
