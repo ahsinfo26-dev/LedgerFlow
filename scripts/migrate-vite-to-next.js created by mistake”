@@ -1,0 +1,76 @@
+import fs from 'fs-extra';
+import path from 'path';
+import globby from 'globby';
+
+async function run(){
+  console.log('Starting LedgerFlow migration: Vite -> Next (conservative)');
+
+  // 1) Ensure public exists (copy static if any)
+  await fs.ensureDir('public');
+  for (const srcDir of ['public','static']) {
+    if (await fs.pathExists(srcDir) && srcDir !== 'public') {
+      console.log(`Copying ${srcDir} -> public/`);
+      await fs.copy(srcDir, path.join('public','/'), { overwrite: false });
+    }
+  }
+
+  // 2) Update package.json: add next dependency and scripts
+  const pkgPath = 'package.json';
+  if (!await fs.pathExists(pkgPath)) {
+    throw new Error('package.json not found');
+  }
+  const pkg = await fs.readJson(pkgPath);
+  pkg.dependencies = pkg.dependencies || {};
+  if (!pkg.dependencies.next) {
+    pkg.dependencies.next = '^14.0.0';
+    console.log('Added next@^14.0.0 to dependencies (please adjust if you need a specific Next version).');
+  }
+  pkg.scripts = pkg.scripts || {};
+  // Preserve existing scripts but set Next for dev/build/start/export
+  pkg.scripts['dev'] = 'next dev';
+  pkg.scripts['build'] = 'next build';
+  pkg.scripts['start'] = 'next start';
+  pkg.scripts['export'] = pkg.scripts['export'] || 'next build && next export';
+  await fs.writeJson(pkgPath, pkg, { spaces: 2 });
+  console.log('Updated package.json with Next and scripts.');
+
+  // 3) Replace import.meta.env.VITE_* -> process.env.NEXT_PUBLIC_*
+  const patterns = ['src/**/*.js','src/**/*.jsx','src/**/*.ts','src/**/*.tsx','**/*.js','**/*.jsx','**/*.ts','**/*.tsx'];
+  const files = await globby(patterns, { gitignore: true, ignore: ['node_modules/**','.git/**','public/**'] });
+  console.log(`Scanning ${files.length} files for import.meta.env.VITE_...`);
+  for (const file of files) {
+    let src = await fs.readFile(file,'utf8');
+    const newSrc = src.replace(/import\.meta\.env\.VITE_([A-Z0-9_]+)/g, (_m, v) => `process.env.NEXT_PUBLIC_${v}`);
+    if (newSrc !== src) {
+      await fs.writeFile(file,newSrc,'utf8');
+      console.log(`Rewrote env refs in ${file}`);
+    }
+  }
+
+  // 4) Create minimal Next pages that mount your existing client App as client-only
+  const pagesDir = 'pages';
+  await fs.ensureDir(pagesDir);
+  const appFile = `import dynamic from 'next/dynamic';\nimport '../src/index.css';\nconst App = dynamic(() => import('../src/App'), { ssr: false });\nexport default function MyApp({ Component, pageProps }) {\n  return <App {...pageProps} />;\n}\n`;
+  await fs.writeFile(path.join(pagesDir,'_app.jsx'), appFile, 'utf8');
+  console.log('Created pages/_app.jsx to mount src/App as client-only.');
+
+  // pages/index.jsx (optional minimal)
+  const indexFile = `export default function Home(){ return null; }`;
+  if (!await fs.pathExists(path.join(pagesDir,'index.jsx'))){
+    await fs.writeFile(path.join(pagesDir,'index.jsx'), indexFile, 'utf8');
+    console.log('Created pages/index.jsx (minimal).');
+  } else {
+    console.log('pages/index.jsx exists – skipped creating.');
+  }
+
+  // 5) Move vite.config.js out of repo root so Rocket won't reject it (backup)
+  if (await fs.pathExists('vite.config.js')) {
+    await fs.ensureDir('migrations');
+    await fs.move('vite.config.js','migrations/vite.config.js.backup',{ overwrite: true });
+    console.log('Moved vite.config.js -> migrations/vite.config.js.backup');
+  }
+
+  console.log('Migration script finished. Review changes, run npm ci, and test locally (next dev / next build).');
+}
+
+run().catch(err => { console.error(err); process.exit(1); });
