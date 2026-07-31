@@ -23,13 +23,15 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install required packages for codemod
-        run: node LedgerFlow/scripts/migrate-vite-to-next.mjs
-          npm install --no-save fs-extra globby
+- name: Install required packages for codemod
+  working-directory: LedgerFlow
+  run: |
+    npm install --no-save fs-extra globby
 
-      - name: Run migration script
-        run: node scripts/migrate-vite-to-next.mjs
-
+- name: Run migration script
+  working-directory: LedgerFlow
+  run: |
+    node scripts/migrate-vite-to-next.mjs
       - name: Create Pull Request with changes
         uses: peter-evans/create-pull-request@v5
         with:
