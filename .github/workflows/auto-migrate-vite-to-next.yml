@@ -27,6 +27,20 @@ jobs:
         run: |
           npm install --no-save fs-extra globby
 
+      - name: Show repo files
+        run: |
+          echo "Working directory:"
+          pwd
+          echo ""
+          echo "Top-level files:"
+          ls -la
+          echo ""
+          echo "Scripts folder contents (if any):"
+          ls -la scripts || true
+          echo ""
+          echo "List all files (limited depth) to help debugging:"
+          find . -maxdepth 3 -type f | sed -n '1,200p'
+
       - name: Run migration script
         run: node scripts/migrate-vite-to-next.mjs
 
