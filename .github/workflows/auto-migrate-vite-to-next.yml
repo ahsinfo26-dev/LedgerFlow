@@ -24,7 +24,7 @@ jobs:
           node-version: '20'
 
       - name: Install required packages for codemod
-        run: |
+        run: node LedgerFlow/scripts/migrate-vite-to-next.mjs
           npm install --no-save fs-extra globby
 
       - name: Run migration script
