@@ -1,0 +1,57 @@
+name: Auto migrate Vite → Next (create PR)
+on:
+  push:
+    branches:
+      - vita
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install required packages for codemod
+        run: |
+          npm install --no-save fs-extra globby
+
+      - name: Show repo files
+        run: |
+          echo "Working directory:"
+          pwd
+          echo ""
+          echo "Top-level files:"
+          ls -la
+          echo ""
+          echo "Scripts folder contents (if any):"
+          ls -la scripts || true
+          echo ""
+          echo "List all files (limited depth) to help debugging:"
+          find . -maxdepth 3 -type f | sed -n '1,200p'
+
+      - name: Run migration script
+        run: node scripts/migrate-vite-to-next.mjs
+
+      - name: Create Pull Request with changes
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "Automated: migrate Vite -> Next"
+          branch: "auto/migrate-vite-to-next-${{ github.run_id }}"
+          base: next
+          title: "Automated migration: Vite → Next"
+          body: |
+            Mechanical migration to Next. Review and run build/tests before merging.
+          labels: automated,migration
