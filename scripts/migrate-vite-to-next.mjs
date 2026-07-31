@@ -1,57 +1,61 @@
-name: Auto migrate Vite → Next (create PR)
-on:
-  push:
-    branches:
-      - vita
-  workflow_dispatch:
+#!/usr/bin/env node
+/**
+ * Simple migration driver (starter).
+ * - Uses fs-extra and globby (workflow installs them).
+ * - Finds candidate files and applies mechanical replacements.
+ *
+ * Paste this into scripts/migrate-vite-to-next.mjs and commit.
+ */
 
-permissions:
-  contents: write
-  pull-requests: write
+import fs from 'fs-extra';
+import { globby } from 'globby';
 
-jobs:
-  migrate:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+async function processFile(file) {
+  const text = await fs.readFile(file, 'utf8');
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
+  // Example mechanical edits — customize these rules as needed.
+  let updated = text;
 
-      - name: Install required packages for codemod
-        run: |
-          npm install --no-save fs-extra globby
+  // Example: replace imports from 'vite' with a placeholder import from 'next'
+  updated = updated.replace(/from\s+['"]vite['"]/g, "from 'next'");
 
-      - name: Show repo files
-        run: |
-          echo "Working directory:"
-          pwd
-          echo ""
-          echo "Top-level files:"
-          ls -la
-          echo ""
-          echo "Scripts folder contents (if any):"
-          ls -la scripts || true
-          echo ""
-          echo "List all files (limited depth) to help debugging:"
-          find . -maxdepth 3 -type f | sed -n '1,200p'
+  // Add more rules here, e.g. route changes, file renames, etc.
 
-      - name: Run migration script
-        run: node scripts/migrate-vite-to-next.mjs
+  if (updated !== text) {
+    await fs.writeFile(file, updated, 'utf8');
+    console.log(`Updated: ${file}`);
+    return true;
+  }
+  return false;
+}
 
-      - name: Create Pull Request with changes
-        uses: peter-evans/create-pull-request@v5
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: "Automated: migrate Vite -> Next"
-          branch: "auto/migrate-vite-to-next-${{ github.run_id }}"
-          base: next
-          title: "Automated migration: Vite → Next"
-          body: |
-            Mechanical migration to Next. Review and run build/tests before merging.
-          labels: automated,migration
+async function run() {
+  console.log('Starting migration script...');
+  const patterns = [
+    'src/**/*.{js,jsx,ts,tsx,mjs}',
+    'pages/**/*.{js,ts,jsx,tsx}',
+    'components/**/*.{js,ts,jsx,tsx}',
+    '*.js',
+    '*.mjs',
+    '!node_modules/**'
+  ];
+
+  const files = await globby(patterns);
+  console.log(`Found ${files.length} candidate files.`);
+
+  let changed = 0;
+  for (const file of files) {
+    try {
+      if (await processFile(file)) changed++;
+    } catch (err) {
+      console.warn(`Error processing ${file}: ${err.message}`);
+    }
+  }
+
+  console.log(`Migration complete. Files changed: ${changed}`);
+}
+
+run().catch(err => {
+  console.error(err);
+  process.exit(1);
+});
