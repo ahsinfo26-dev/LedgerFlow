@@ -23,26 +23,31 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install required packages for codemod
-        run: npm install --no-save fs-extra globby --prefix LedgerFlow
+       - name: Install required packages for codemod
+    run: npm install --no-save fs-extra globby
 
-      - name: Show repo files (debug)
-        run: |
-          echo "Repo root (pwd):"
-          pwd
-          echo ""
-          echo "Top-level files and folders:"
-          ls -la
-          echo ""
-          echo "Contents of LedgerFlow (if present):"
-          ls -la LedgerFlow || echo "LedgerFlow folder not found"
-          echo ""
-          echo "Find under repo root (depth 3):"
-          find . -maxdepth 3 -type f | sed -n '1,200p'
+  - name: Show repo files (debug)
+    run: |
+      echo "Repo root (pwd):"
+      pwd
+      echo ""
+      echo "Top-level files and folders:"
+      ls -la
+      echo ""
+      echo "List files under repo (depth 3):"
+      find . -maxdepth 3 -type f | sed -n '1,200p'
 
-      - name: Run migration script
-        run: node LedgerFlow/scripts/migrate-vite-to-next.mjs
-
+  - name: Run migration script (find and execute)
+    run: |
+      set -e
+      target=$(find . -type f -name migrate-vite-to-next.mjs -print -quit || true)
+      if [ -z "$target" ]; then
+        echo "ERROR: migrate-vite-to-next.mjs not found in repo"
+        find . -type f -name '*migrate*' -print -quit || true
+        exit 1
+      fi
+      echo "Found script at: $target"
+      node "$target"
       - name: Create Pull Request with changes
         uses: peter-evans/create-pull-request@v5
         with:
