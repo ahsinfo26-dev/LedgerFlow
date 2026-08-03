@@ -1,3 +1,4 @@
+name: Auto migrate Vite → Next (create PR) on: push: branches: - vita workflow_dispatch:
 jobs:
   migrate:
     runs-on: ubuntu-latest
