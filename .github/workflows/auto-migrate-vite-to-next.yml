@@ -34,16 +34,17 @@ jobs:
           echo "Top-level files and folders:"
           ls -la
           echo ""
-          echo "Find migrate script (depth 4):"
-          find . -maxdepth 4 -type f -name "migrate-vite-to-next.mjs" -print || true
+          echo "Find migrate script (depth 6):"
+          find . -maxdepth 6 -type f -name "migrate-vite-to-next.mjs" -print || true
           echo ""
-          echo "Contents of LedgerFlow (if present):"
-          ls -la LedgerFlow || true
+          echo "Contents of ./scripts (if present):"
+          ls -la scripts || true
           echo ""
           echo "List files under repo root (depth 3):"
           find . -maxdepth 3 -type f | sed -n '1,200p'
 
       - name: Run migration script (find and execute)
+        id: run-script
         run: |
           set -euo pipefail
           target=$(find . -type f -name migrate-vite-to-next.mjs -print -quit || true)
@@ -53,9 +54,31 @@ jobs:
             exit 1
           fi
           echo "Found script at: $target"
+          realpath "$target" || true
           node "$target"
 
+      - name: Commit changes (if any)
+        id: commit
+        run: |
+          # Configure git user for commits
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          # Stage all changes
+          git add -A
+
+          # If there are no staged changes, write output changes=false
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+            echo "changes=false" >> $GITHUB_OUTPUT
+          else
+            git commit -m "Automated: migrate Vite -> Next"
+            echo "Committed migration changes"
+            echo "changes=true" >> $GITHUB_OUTPUT
+          fi
+
       - name: Create Pull Request with changes
+        if: steps.commit.outputs.changes == 'true'
         uses: peter-evans/create-pull-request@v5
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
